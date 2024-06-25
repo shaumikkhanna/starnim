@@ -30,7 +30,7 @@ def compute_move(node_states, error_probability):
     return move
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(port=8000)
 
 
 
