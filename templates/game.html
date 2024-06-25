@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Star Nim Game</title>
+		<link rel="stylesheet" href="/static/styles.css" />
+	</head>
+	<body>
+		<div id="game-board">
+			<div id="app">
+				<div class="container">
+					<svg width="600" height="600"></svg>
+					<div class="controls">
+						<button style="margin: 7px 0" id="submit-move">
+							Submit Move
+						</button>
+						<button style="margin: 7px 0" id="computer-move">
+							Computer Move
+						</button>
+						<button
+							style="margin: 7px 0"
+							onclick="location.href = '/'"
+							id="reset-game"
+						>
+							Reset Game
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div
+			id="sad-animation"
+			style="
+				display: none;
+				font-size: 48px;
+				animation: sadMove 2s infinite;
+			"
+		>
+			😢
+		</div>
+		<script src="/static/script.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+	</body>
+</html>
