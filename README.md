@@ -8,7 +8,7 @@ To set up a local development environment, follow these steps:
 
 
 ```bash
-git clone https://github.com/shaumikkhanna/starnim```
+git clone https://github.com/shaumikkhanna/starnim
 cd star-nim
 python -m pip install -r requirements.txt
 python app.py
