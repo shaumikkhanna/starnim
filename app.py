@@ -20,7 +20,7 @@ def computer_move():
     node_states = request.json['node_states']
     difficulty = float(request.json['difficulty'])
 
-    move = compute_move(node_states, difficulty)
+    move = compute_move(node_states, 1 - difficulty)
     return jsonify({'move': move})
 
 
