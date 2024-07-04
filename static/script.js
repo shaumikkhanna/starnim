@@ -191,8 +191,8 @@ function checkGameStatus() {
 function showConfettiAnimation() {
 	// Assuming canvas-confetti is included in your project
 	confetti({
-		particleCount: 100,
-		spread: 70,
+		particleCount: 10 * 100,
+		spread: 3 * 70,
 		origin: { y: 0.6 },
 	});
 }
