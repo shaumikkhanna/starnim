@@ -1,33 +1,20 @@
-from flask import Flask, request, jsonify, render_template, url_for
-from starnim_logic import Starnim
+from flask import Flask, render_template
+from starnim.starnim import starnim_bp
 
 
 app = Flask(__name__)
 
 
+app.register_blueprint(starnim_bp, url_prefix='/starnim', static_folder='starnim/static', template_folder='starnim/templates')
+
+
 @app.route('/')
-def home():
-    return render_template('start.html')
-
-
-@app.route('/game', methods=['GET', 'POST'])
-def game():
-    return render_template('game.html')
-
-
-@app.route('/computer-move', methods=['POST'])
-def computer_move():
-    node_states = request.json['node_states']
-    difficulty = float(request.json['difficulty'])
-
-    star = Starnim(node_states=node_states)
-    move = star.next_move_node(1 - difficulty)
-
-    return jsonify({'move': move})
+def index():
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run(port=8000)
+    app.run(port=8000, debug=True)
 
 
 

@@ -3,7 +3,8 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>{% block title %} {% endblock %}</title>
-		<link rel="stylesheet" href="/static/styles.css" />
+		<link rel="stylesheet" href="/static/global_style.css" />
+		<link rel="stylesheet" href="/starnim/static/style.css" />
 		<!-- Favicon links -->
 		<link
 			rel="apple-touch-icon"
@@ -26,6 +27,17 @@
 			rel="manifest"
 			href="{{ url_for('static', filename='assets/favicons/site.webmanifest') }}"
 		/>
+
+		<!-- For top right home button -->
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+		/>
+		<div class="home-button">
+			<a href="{{ url_for('index') }}">
+				<i class="fas fa-home"></i>
+			</a>
+		</div>
 	</head>
 	<body>
 		{% block content %}

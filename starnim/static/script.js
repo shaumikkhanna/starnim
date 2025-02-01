@@ -18,7 +18,7 @@ function startGame() {
 
 	localStorage.setItem("n", n);
 	localStorage.setItem("difficulty", difficulty);
-	window.location.href = "/game"; // Redirect to the game page
+	window.location.href = "/starnim/game"; // Redirect to the game page
 }
 
 function attachNodeEventListeners() {
@@ -136,7 +136,7 @@ document.getElementById("computer-move").addEventListener("click", function () {
 	);
 	const difficulty = localStorage.getItem("difficulty");
 
-	fetch("/computer-move", {
+	fetch("/starnim/computer-move", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

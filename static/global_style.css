@@ -1,0 +1,85 @@
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	background-color: #bab084;
+}
+
+nav {
+	background: #333;
+	padding: 1em;
+}
+
+nav ul {
+	list-style: none;
+	padding: 0;
+}
+
+nav ul li {
+	display: inline;
+	margin: 0 15px;
+}
+
+nav ul li a {
+	color: #bab084;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+header {
+	padding: 50px;
+	background: #222;
+	color: #bab084;
+}
+
+.grid-container {
+	padding: 20px;
+}
+
+.grid {
+	display: flex;
+	justify-content: center;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.card {
+	background: #bab084;
+	padding: 20px;
+	width: 250px;
+	text-decoration: none;
+	color: black;
+	border-radius: 10px;
+	box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+	transition: transform 0.2s;
+}
+
+.card:hover {
+	transform: scale(1.05);
+}
+
+footer {
+	background: #333;
+	color: #bab084;
+	padding: 10px;
+	margin-top: 20px;
+}
+
+.home-button {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	cursor: pointer;
+}
+
+.home-button i {
+	font-size: 30px; /* Adjust size */
+	color: black;
+	transition: transform 0.2s ease-in-out;
+}
+
+.home-button:hover i {
+	transform: scale(1.1);
+	color: #ffcc00; /* Matches selected node color */
+}
