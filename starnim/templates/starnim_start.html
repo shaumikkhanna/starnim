@@ -1,5 +1,5 @@
-{% extends "template.html" %} {% block title %} Starnim {% endblock %} {% block
-content %}
+{% extends "starnim_template.html" %} {% block title %} Starnim {% endblock %}
+{% block content %}
 <div
 	class="center"
 	style="
@@ -48,5 +48,5 @@ content %}
 		};
 	});
 </script>
-<script src="/starnim/static/script.js"></script>
+<script src="{{ url_for('starnim.static', filename='script.js') }}"></script>
 {% endblock %}

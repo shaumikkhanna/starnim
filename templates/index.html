@@ -4,7 +4,11 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>My Portfolio Hub</title>
-		<link rel="stylesheet" type="text/css" href="static/global_style.css" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="{{ url_for('static', filename='global_style.css') }}"
+		/>
 	</head>
 	<body>
 		<!-- For top right home button -->
@@ -21,12 +25,17 @@
 		<!-- Navigation Bar -->
 		<nav>
 			<ul>
-				<li><a href="{{ url_for('starnim.home') }}">Starnim</a></li>
+				<li>
+					<a href="{{ url_for('starnim.home') }}">Starnim</a>
+				</li>
+				<li>
+					<a href="{{ url_for('connections.home') }}">Connections</a>
+				</li>
 			</ul>
 		</nav>
 
 		<header>
-			<h1>Welcome</h1>
+			<h1>P &#x2228; &#x00ac; P</h1>
 		</header>
 
 		<!-- Footer -->

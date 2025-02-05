@@ -7,12 +7,12 @@ starnim_bp = Blueprint('starnim', __name__, static_folder='static', template_fol
 
 @starnim_bp.route('/')
 def home():
-    return render_template('start.html')
+    return render_template('starnim_start.html')
 
 
 @starnim_bp.route('/game', methods=['GET', 'POST'])
 def game():
-    return render_template('game.html')
+    return render_template('starnim_game.html')
 
 
 @starnim_bp.route('/computer-move', methods=['POST'])

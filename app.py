@@ -1,11 +1,12 @@
 from flask import Flask, render_template
 from starnim.starnim import starnim_bp
+from connections.connections import connections_bp
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
-
-app.register_blueprint(starnim_bp, url_prefix='/starnim', static_folder='starnim/static', template_folder='starnim/templates')
+app.register_blueprint(connections_bp, url_prefix='/connections')
+app.register_blueprint(starnim_bp, url_prefix='/starnim')
 
 
 @app.route('/')

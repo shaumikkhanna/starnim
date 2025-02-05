@@ -1,5 +1,5 @@
-{% extends "template.html" %} {% block title %} Starnim {% endblock %} {% block
-content %}
+{% extends "starnim_template.html" %} {% block title %} Starnim {% endblock %}
+{% block content %}
 <div id="game-board">
 	<div id="app">
 		<div class="container">
@@ -28,6 +28,6 @@ content %}
 >
 	😢
 </div>
-<script src="/starnim/static/script.js"></script>
+<script src="{{ url_for('starnim.static', filename='script.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
 {% endblock %}

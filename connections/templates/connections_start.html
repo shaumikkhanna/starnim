@@ -1,0 +1,35 @@
+{% extends "connections_template.html" %} {% block title %} Connections {%
+endblock %} {% block content %}
+<div class="container">
+	<h1 class="title">Connections</h1>
+	<div class="card">
+		<button
+			class="button create"
+			onclick="createGame()"
+			style="margin-bottom: 40px"
+		>
+			Create a Game
+		</button>
+		<div class="input-container">
+			<input
+				type="text"
+				id="gameCode"
+				class="input"
+				placeholder="Enter game code"
+			/>
+			<button class="button play" onclick="playGame()">Play Game</button>
+		</div>
+	</div>
+</div>
+<script>
+	function createGame() {
+		window.location.href = "/connections/create";
+	}
+	function playGame() {
+		const gameCode = document.getElementById("gameCode").value;
+		if (gameCode) {
+			window.location.href = `/connections/play/${gameCode}`;
+		}
+	}
+</script>
+{% endblock %}

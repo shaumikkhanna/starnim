@@ -1,0 +1,278 @@
+{% extends "connections_template.html" %} {% block title %}Create Custom Game{%
+endblock %} {% block content %}
+
+<div class="container">
+	<h1 class="title" style="margin-top: 400px; margin-bottom: 40px">
+		Create Your Puzzle
+	</h1>
+
+	<div id="gridContainer" class="card">
+		<div class="category-inputs">
+			<p class="instruction" style="margin-bottom: 30px">
+				Think of 4 categories with 4 words each. Enter the category
+				names and then use the grid below to enter the words. <br />
+				Each color represents a different category.
+			</p>
+			<div class="category-row">
+				<input
+					type="text"
+					class="category-input yellow"
+					placeholder="Yellow category"
+				/>
+				<input
+					type="text"
+					class="category-input green"
+					placeholder="Green category"
+				/>
+			</div>
+			<div class="category-row">
+				<input
+					type="text"
+					class="category-input blue"
+					placeholder="Blue category"
+				/>
+				<input
+					type="text"
+					class="category-input purple"
+					placeholder="Purple category"
+				/>
+			</div>
+		</div>
+		<div id="grid" class="grid"></div>
+
+		<button
+			class="button play"
+			onclick="submitGame()"
+			style="margin-top: 30px"
+		>
+			Submit
+		</button>
+		<button class="button back" onclick="goBack()">Back</button>
+		<p id="gameCodeDisplay" class="game-code"></p>
+	</div>
+</div>
+
+<style>
+	.button {
+		width: 75%;
+	}
+	.container {
+		padding: 20px;
+	}
+	.card {
+		width: 65vw;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 20px;
+		margin-top: 20px;
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 15px;
+		margin-top: 20px;
+	}
+	.grid-item {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.input-box {
+		width: 100px;
+		height: 100px;
+		border: 2px solid #6a0572;
+		border-radius: 8px;
+		font-size: 1rem;
+		text-align: center;
+		background-color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.color-toggle {
+		margin-top: 5px;
+		cursor: pointer;
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		border: 1px solid black;
+	}
+	.category-inputs {
+		margin: 20px 0;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.category-row {
+		display: flex;
+		justify-content: space-around;
+		width: 100%;
+		margin-bottom: 10px;
+	}
+	.category-input {
+		width: 40%;
+		padding: 10px;
+		border: 2px solid #6a0572;
+		border-radius: 8px;
+		font-size: 1rem;
+		text-align: center;
+		color: white;
+	}
+	.yellow {
+		background-color: yellow;
+		color: black;
+	}
+	.green {
+		background-color: green;
+	}
+	.blue {
+		background-color: blue;
+	}
+	.purple {
+		background-color: purple;
+	}
+
+	.button.back {
+		background-color: grey;
+		color: white;
+		margin-top: 10px;
+		padding: 12px 24px;
+		border: none;
+		border-radius: 8px;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: background 0.3s;
+	}
+	.button.back:hover {
+		background-color: darkgrey;
+	}
+	.game-code {
+		margin-top: 20px;
+		font-size: 1.2rem;
+		font-weight: bold;
+	}
+</style>
+
+<script>
+	const colors = ["yellow", "green", "blue", "purple", "white"];
+	let colorCounts = { yellow: 0, green: 0, blue: 0, purple: 0 };
+
+	function createGrid() {
+		let grid = document.getElementById("grid");
+		grid.innerHTML = "";
+
+		for (let i = 0; i < 16; i++) {
+			let div = document.createElement("div");
+			div.className = "grid-item";
+
+			let input = document.createElement("input");
+			input.type = "text";
+			input.className = "input-box";
+			input.placeholder = `Word ${i + 1}`;
+			input.dataset.index = i;
+
+			let toggle = document.createElement("div");
+			toggle.className = "color-toggle";
+			toggle.dataset.index = i;
+			toggle.onclick = function () {
+				cycleColor(input);
+			};
+
+			div.appendChild(input);
+			div.appendChild(toggle);
+			grid.appendChild(div);
+		}
+	}
+
+	function cycleColor(input) {
+		let currentColor = input.style.backgroundColor || "white";
+		let index = colors.indexOf(currentColor);
+		let newColor = colors[(index + 1) % colors.length];
+
+		colorCounts[currentColor] = Math.max(
+			0,
+			(colorCounts[currentColor] || 0) - 1
+		);
+		colorCounts[newColor] = (colorCounts[newColor] || 0) + 1;
+		input.style.backgroundColor = newColor;
+	}
+
+	function submitGame() {
+		let inputs = document.querySelectorAll(".input-box");
+		let categoryInputs = document.querySelectorAll(".category-input");
+		let puzzleData = [];
+		let words = [];
+		let categories = {};
+
+		for (let input of inputs) {
+			let word = input.value.trim();
+			let color = input.style.backgroundColor;
+
+			if (word === "") {
+				alert("Please fill in all fields before submitting.");
+				return;
+			}
+			if (words.includes(word.toLowerCase())) {
+				alert("All words must be unique.");
+				return;
+			}
+			words.push(word.toLowerCase());
+
+			puzzleData.push({ word: word, category: color });
+		}
+
+		for (let color of colors) {
+			if (color == "white") {
+				continue;
+			}
+			if (colorCounts[color] !== 4) {
+				alert("Each color must be used exactly 4 times.");
+				return;
+			}
+		}
+
+		for (let i = 0; i < categoryInputs.length; i++) {
+			let input = categoryInputs[i];
+			let colorClass = colors.find((color) =>
+				input.classList.contains(color)
+			);
+			let categoryName = input.value.trim();
+
+			if (categoryName === "") {
+				alert("Please fill in all category names.");
+				return;
+			}
+			categories[colorClass] = categoryName;
+		}
+
+		const gameCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+
+		fetch("/connections/save-puzzle", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				game_code: gameCode,
+				puzzle: puzzleData,
+				categories: categories,
+			}),
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				document.getElementById(
+					"gameCodeDisplay"
+				).innerText = `Game Code: ${gameCode}`;
+			})
+			.catch((error) => console.error("Error:", error));
+	}
+
+	function goBack() {
+		window.history.back();
+	}
+
+	window.onload = createGrid;
+</script>
+{% endblock %}
