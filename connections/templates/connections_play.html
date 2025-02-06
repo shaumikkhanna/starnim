@@ -3,10 +3,15 @@ endblock %} {% block content %}
 <div class="container">
 	<h1 class="title">Your Puzzle</h1>
 
-	<div class="grid">
-		{% for item in puzzle.puzzle %}
-		<div class="puzzle-box" style="background-color: {{ item.category }};">
-			{{ item.word }}
+	<div class="puzzle-display">
+		{% for category_index, category_name in puzzle.categories.items() %}
+		<div class="category-box {{ category_index }}">
+			<h2>{{ category_name }}</h2>
+			<p>
+				{% for item in puzzle.puzzle if item.category|string ==
+				category_index %} {{ item.word }}{% if not loop.last %}, {%
+				endif %} {% endfor %}
+			</p>
 		</div>
 		{% endfor %}
 	</div>
@@ -17,23 +22,36 @@ endblock %} {% block content %}
 		padding: 20px;
 		text-align: center;
 	}
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+	.puzzle-display {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		gap: 15px;
-		justify-content: center;
 		margin-top: 20px;
 	}
-	.puzzle-box {
-		width: 100px;
-		height: 100px;
-		border: 2px solid #6a0572;
+	.category-box {
+		width: 400%;
+		padding: 20px;
 		border-radius: 8px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
 		font-size: 1.2rem;
 		color: white;
+		text-align: center;
+	}
+	.category-box h2 {
+		margin-bottom: 10px;
+	}
+	.category-box.\30 {
+		background-color: rgb(249, 223, 109);
+		color: black;
+	}
+	.category-box.\31 {
+		background-color: rgb(160, 195, 90);
+	}
+	.category-box.\32 {
+		background-color: rgb(176, 196, 239);
+	}
+	.category-box.\33 {
+		background-color: rgb(187, 129, 197);
 	}
 </style>
 {% endblock %}

@@ -13,6 +13,7 @@ endblock %} {% block content %}
 				names and then use the grid below to enter the words. <br />
 				Each color represents a different category.
 			</p>
+
 			<div class="category-row">
 				<input
 					type="text"
@@ -38,6 +39,7 @@ endblock %} {% block content %}
 				/>
 			</div>
 		</div>
+
 		<div id="grid" class="grid"></div>
 
 		<button
@@ -81,7 +83,7 @@ endblock %} {% block content %}
 		align-items: center;
 	}
 	.input-box {
-		width: 100px;
+		width: 180px;
 		height: 100px;
 		border: 2px solid #6a0572;
 		border-radius: 8px;
@@ -120,22 +122,12 @@ endblock %} {% block content %}
 		border-radius: 8px;
 		font-size: 1rem;
 		text-align: center;
-		color: white;
-	}
-	.yellow {
-		background-color: yellow;
 		color: black;
+		padding: 20px;
 	}
-	.green {
-		background-color: green;
+	.category-input::placeholder {
+		color: #777777;
 	}
-	.blue {
-		background-color: blue;
-	}
-	.purple {
-		background-color: purple;
-	}
-
 	.button.back {
 		background-color: grey;
 		color: white;
@@ -159,7 +151,14 @@ endblock %} {% block content %}
 
 <script>
 	const colors = ["yellow", "green", "blue", "purple", "white"];
-	let colorCounts = { yellow: 0, green: 0, blue: 0, purple: 0 };
+	const trueColors = [
+		"rgb(249, 223, 109)",
+		"rgb(160, 195, 90)",
+		"rgb(176, 196, 239)",
+		"rgb(187, 129, 197)",
+		"white",
+	];
+	let colorCounts = [0, 0, 0, 0, 0];
 
 	function createGrid() {
 		let grid = document.getElementById("grid");
@@ -190,14 +189,15 @@ endblock %} {% block content %}
 
 	function cycleColor(input) {
 		let currentColor = input.style.backgroundColor || "white";
-		let index = colors.indexOf(currentColor);
-		let newColor = colors[(index + 1) % colors.length];
+		let currentColorIndex = trueColors.indexOf(currentColor);
+		let newColorIndex = (currentColorIndex + 1) % colors.length;
+		let newColor = trueColors[newColorIndex];
 
-		colorCounts[currentColor] = Math.max(
+		colorCounts[currentColorIndex] = Math.max(
 			0,
-			(colorCounts[currentColor] || 0) - 1
+			(colorCounts[currentColorIndex] || 0) - 1
 		);
-		colorCounts[newColor] = (colorCounts[newColor] || 0) + 1;
+		colorCounts[newColorIndex] = (colorCounts[newColorIndex] || 0) + 1;
 		input.style.backgroundColor = newColor;
 	}
 
@@ -222,17 +222,21 @@ endblock %} {% block content %}
 			}
 			words.push(word.toLowerCase());
 
-			puzzleData.push({ word: word, category: color });
+			puzzleData.push({
+				word: word,
+				category: trueColors.indexOf(color),
+			});
 		}
 
-		for (let color of colors) {
-			if (color == "white") {
-				continue;
-			}
-			if (colorCounts[color] !== 4) {
-				alert("Each color must be used exactly 4 times.");
+		for (let i = 0; i < colorCounts.length - 1; i++) {
+			if (colorCounts[i] !== 4) {
+				alert("Each category must have exactly 4 words.");
 				return;
 			}
+		}
+		if (colorCounts[colorCounts.length - 1] !== 0) {
+			alert("Each category must have exactly 4 words.");
+			return;
 		}
 
 		for (let i = 0; i < categoryInputs.length; i++) {
@@ -246,7 +250,7 @@ endblock %} {% block content %}
 				alert("Please fill in all category names.");
 				return;
 			}
-			categories[colorClass] = categoryName;
+			categories[colors.indexOf(colorClass)] = categoryName;
 		}
 
 		const gameCode = Math.random().toString(36).substr(2, 6).toUpperCase();

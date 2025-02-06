@@ -61,3 +61,17 @@ body {
 .play:hover {
 	background-color: #00cec9;
 }
+
+.yellow {
+	background-color: rgb(249, 223, 109);
+	color: black;
+}
+.green {
+	background-color: rgb(160, 195, 90);
+}
+.blue {
+	background-color: rgb(176, 196, 239);
+}
+.purple {
+	background-color: rgb(187, 129, 197);
+}

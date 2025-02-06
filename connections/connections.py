@@ -5,6 +5,8 @@ import os
 
 connections_bp = Blueprint('connections', __name__, static_folder='static', template_folder='templates')
 
+PUZZLES_FILENAME = 'connections/puzzles.json'
+
 
 @connections_bp.route('/')
 def home():
@@ -23,19 +25,19 @@ def save_puzzle():
     game_code = data['game_code']
 
     # Check if puzzles.json exists; if not, create it
-    if not os.path.exists('puzzles.json'):
-        with open('puzzles.json', 'w') as f:
+    if not os.path.exists(PUZZLES_FILENAME):
+        with open(PUZZLES_FILENAME, 'w') as f:
             json.dump({}, f)
 
     # Load existing puzzles
-    with open('puzzles.json', 'r') as f:
+    with open(PUZZLES_FILENAME, 'r') as f:
         puzzles = json.load(f)
 
     # Add new puzzle
     puzzles[game_code] = data
 
     # Save back to puzzles.json
-    with open('puzzles.json', 'w') as f:
+    with open(PUZZLES_FILENAME, 'w') as f:
         json.dump(puzzles, f, indent=4)
 
     return jsonify({"message": "Puzzle saved successfully!"})
@@ -44,11 +46,11 @@ def save_puzzle():
 @connections_bp.route('/play/<game_code>')
 def play_puzzle(game_code):
     # Check if puzzles.json exists
-    if not os.path.exists('puzzles.json'):
+    if not os.path.exists(PUZZLES_FILENAME):
         return "No puzzles found!", 404
 
     # Load puzzles
-    with open('puzzles.json', 'r') as f:
+    with open(PUZZLES_FILENAME, 'r') as f:
         puzzles = json.load(f)
 
     # Check if the game code exists
