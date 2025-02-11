@@ -1,45 +1,148 @@
 {% extends "connections_template.html" %} {% block title %}Play Puzzle{%
 endblock %} {% block content %}
-<div class="container">
-	<h1 class="title">Your Puzzle</h1>
 
-	<div class="puzzle-display">
-		{% for category_index, category_name in puzzle.categories.items() %}
-		<div class="category-box {{ category_index }}">
-			<h2>{{ category_name }}</h2>
-			<p>
-				{% for item in puzzle.puzzle if item.category|string ==
-				category_index %} {{ item.word }}{% if not loop.last %}, {%
-				endif %} {% endfor %}
-			</p>
+<div class="container">
+	<h1 class="title" style="margin-bottom: 5px; margin-top: 200px">
+		{{ puzzle.puzzle_name }}
+	</h1>
+	<h2 class="subtitle" style="margin-bottom: 80px">
+		{{ puzzle.puzzle_description }}
+	</h2>
+
+	<!-- Container for solved (grouped) rectangle -->
+	<div id="correctContainer" class="correct-container"></div>
+
+	<!-- Grid for all puzzle words -->
+	<div id="gridContainer" class="grid-container">
+		{% for item in puzzle.puzzle %}
+		<div
+			class="grid-square"
+			data-category="{{ item.category }}"
+			data-word="{{ item.word }}"
+		>
+			{{ item.word }}
 		</div>
 		{% endfor %}
 	</div>
+
+	<!-- Buttons for actions -->
+	<div class="button-container">
+		<button class="action-button" onclick="submitSelection()">
+			Submit
+		</button>
+		<button class="action-button" onclick="deselectAll()">
+			Deselect All
+		</button>
+		<button class="action-button" onclick="shuffleGrid()">Shuffle</button>
+	</div>
+
+	<!-- Go Back button under the action buttons -->
+	<button class="action-button" onclick="goBack()">Go Back</button>
 </div>
 
 <style>
 	.container {
-		padding: 20px;
 		text-align: center;
+		padding: 20px;
 	}
-	.puzzle-display {
+	/* Grid container for 16 squares */
+	.grid-container {
+		display: grid;
+		grid-template-columns: repeat(
+			4,
+			150px
+		); /* 4 fixed columns, each 150px wide */
+		grid-auto-rows: 150px; /* Each row will be 150px tall */
+		gap: 10px; /* Gap between cells */
+		justify-content: center; /* Center the grid horizontally */
+	}
+
+	/* Each square styling */
+	.grid-square {
+		width: 150px; /* Fixed width */
+		height: 150px; /* Fixed height to enforce square shape */
+		background-color: white;
+		border: 2px solid #6a0572;
+		border-radius: 8px;
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 15px;
+		justify-content: center;
+		text-align: center;
+		font-size: 1.2rem;
+		cursor: pointer;
+		user-select: none;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+	/* Visual cue for selection */
+	.grid-square.selected {
+		box-shadow: 0 0 2px 2px #6a0572;
+		color: white;
+		background: #5a594e;
+		transform: scale(1.05);
+	}
+	/* Action button styling */
+	.action-button {
+		margin-top: 20px;
+		padding: 10px 20px;
+		font-size: 1rem;
+		background-color: #6a0572;
+		color: white;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+	}
+	.action-button:hover {
+		background-color: #4a0350;
+	}
+	.button-container {
+		display: flex;
+		justify-content: center;
+		gap: 10px;
 		margin-top: 20px;
 	}
-	.category-box {
-		width: 400%;
+	/* Container for solved rectangle */
+	.grid-container,
+	.correct-container {
+		margin: 20px auto;
+		width: 100%;
+	}
+	/* Solved rectangle styling */
+	.solved-rectangle {
+		width: 100%;
 		padding: 20px;
 		border-radius: 8px;
-		font-size: 1.2rem;
-		color: white;
-		text-align: center;
-	}
-	.category-box h2 {
+		transition: transform 0.3s ease, opacity 0.3s ease;
 		margin-bottom: 10px;
+		transform: translateY(-30px);
+		opacity: 0;
 	}
+	.solved-rectangle.slide-in {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	/* Faster shake animation */
+	@keyframes shake {
+		0% {
+			transform: translate(0, 0);
+		}
+		25% {
+			transform: translate(-8px, 0);
+		}
+		50% {
+			transform: translate(8px, 0);
+		}
+		75% {
+			transform: translate(-8px, 0);
+		}
+		100% {
+			transform: translate(0, 0);
+		}
+	}
+	.shake {
+		animation: shake 0.2s;
+	}
+	/* Category box colors (if needed elsewhere) */
 	.category-box.\30 {
 		background-color: rgb(249, 223, 109);
 		color: black;
@@ -54,4 +157,137 @@ endblock %} {% block content %}
 		background-color: rgb(187, 129, 197);
 	}
 </style>
+
+<script id="categoryMappingData" type="application/json">
+	{{ puzzle.categories | tojson | safe }}
+</script>
+
+<script>
+	// Parse category mapping from Jinja (using JSON.parse to avoid syntax issues)
+	const categoryMapping = JSON.parse(
+		document.getElementById("categoryMappingData").textContent
+	);
+	// Define category colors that match your CSS
+	const categoryColors = {
+		0: { bg: "rgb(249, 223, 109)", text: "black" },
+		1: { bg: "rgb(160, 195, 90)", text: "black" },
+		2: { bg: "rgb(176, 196, 239)", text: "black" },
+		3: { bg: "rgb(187, 129, 197)", text: "black" },
+	};
+	// Allow hints flag from puzzle.allow_hints
+	const allowHints = JSON.parse("{{ puzzle.allow_hints | tojson | safe }}");
+
+	const gridContainer = document.getElementById("gridContainer");
+	const correctContainer = document.getElementById("correctContainer");
+	let selectedSquares = [];
+
+	// Attach click event listeners to grid squares
+	const squares = document.querySelectorAll(".grid-square");
+	squares.forEach((square) => {
+		square.addEventListener("click", () => {
+			toggleSelection(square);
+		});
+	});
+
+	function toggleSelection(square) {
+		if (square.classList.contains("selected")) {
+			square.classList.remove("selected");
+			selectedSquares = selectedSquares.filter((sq) => sq !== square);
+		} else {
+			if (selectedSquares.length < 4) {
+				square.classList.add("selected");
+				selectedSquares.push(square);
+			} else {
+				alert("You can only select 4 squares.");
+			}
+		}
+	}
+
+	function submitSelection() {
+		if (selectedSquares.length !== 4) {
+			alert("Please select exactly 4 squares.");
+			return;
+		}
+		const category = selectedSquares[0].getAttribute("data-category");
+		const allSameCategory = selectedSquares.every(
+			(sq) => sq.getAttribute("data-category") === category
+		);
+		if (allSameCategory) {
+			// Correct guess: Build and display the solved rectangle.
+			const words = selectedSquares.map((sq) =>
+				sq.getAttribute("data-word")
+			);
+			const categoryName =
+				categoryMapping[category] || "Category " + category;
+			let solvedDiv = document.createElement("div");
+			solvedDiv.classList.add("solved-rectangle");
+			solvedDiv.innerHTML = `<h2>${categoryName}</h2><p>${words.join(
+				", "
+			)}</p>`;
+			if (categoryColors[category]) {
+				solvedDiv.style.backgroundColor = categoryColors[category].bg;
+				solvedDiv.style.color = categoryColors[category].text;
+			}
+			correctContainer.appendChild(solvedDiv);
+			setTimeout(() => {
+				solvedDiv.classList.add("slide-in");
+			}, 50);
+			// Remove solved squares from grid.
+			selectedSquares.forEach((square) => square.remove());
+			selectedSquares = [];
+		} else {
+			// Wrong guess.
+			// Check if the selection is "one away" from being correct.
+			const counts = {};
+			selectedSquares.forEach((sq) => {
+				const cat = sq.getAttribute("data-category");
+				counts[cat] = (counts[cat] || 0) + 1;
+			});
+			if (
+				allowHints &&
+				Object.values(counts).some((count) => count === 3)
+			) {
+				alert("One away...");
+			}
+			// Apply shake animation.
+			selectedSquares.forEach((square) => {
+				square.classList.add("shake");
+			});
+			setTimeout(() => {
+				selectedSquares.forEach((square) => {
+					square.classList.remove("shake");
+					square.classList.remove("selected");
+				});
+				selectedSquares = [];
+			}, 300);
+		}
+	}
+
+	// Deselects all selected squares.
+	function deselectAll() {
+		selectedSquares.forEach((square) =>
+			square.classList.remove("selected")
+		);
+		selectedSquares = [];
+	}
+
+	// Shuffle the order of unsolved squares in the grid.
+	function shuffleGrid() {
+		const squaresArray = Array.from(gridContainer.children);
+		// Use Fisher-Yates shuffle
+		for (let i = squaresArray.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[squaresArray[i], squaresArray[j]] = [
+				squaresArray[j],
+				squaresArray[i],
+			];
+		}
+		gridContainer.innerHTML = "";
+		squaresArray.forEach((square) => gridContainer.appendChild(square));
+	}
+
+	function goBack() {
+		window.history.back();
+	}
+</script>
 {% endblock %}

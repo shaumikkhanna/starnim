@@ -2,18 +2,75 @@
 endblock %} {% block content %}
 
 <div class="container">
-	<h1 class="title" style="margin-top: 400px; margin-bottom: 40px">
+	<h1 class="title" style="margin-top: 700px; margin-bottom: 40px">
 		Create Your Puzzle
 	</h1>
 
-	<div id="gridContainer" class="card">
-		<div class="category-inputs">
-			<p class="instruction" style="margin-bottom: 30px">
-				Think of 4 categories with 4 words each. Enter the category
-				names and then use the grid below to enter the words. <br />
-				Each color represents a different category.
-			</p>
+	<p class="instruction" style="margin-bottom: 50px">
+		Think of 4 categories with 4 words each. Enter the category names and
+		then use the grid below to enter the words. <br />
+		Each color represents a different category.
+	</p>
 
+	<div id="gridContainer" class="card" style="padding-top: 60px">
+		<div
+			class="puzzle-settings"
+			style="margin-bottom: 20px; width: 100%; text-align: center"
+		>
+			<input
+				type="text"
+				id="puzzleName"
+				class="puzzle-input"
+				placeholder="Puzzle Name (Optional)"
+				style="
+					width: 80%;
+					padding: 10px;
+					margin-bottom: 10px;
+					border: 2px solid #6a0572;
+					border-radius: 8px;
+				"
+			/>
+			<textarea
+				id="puzzleDescription"
+				class="puzzle-input"
+				placeholder="Puzzle Description (Optional)"
+				style="
+					width: 80%;
+					padding: 10px;
+					margin-bottom: 10px;
+					border: 2px solid #6a0572;
+					border-radius: 8px;
+					resize: vertical;
+				"
+			></textarea>
+			<div style="display: block; margin-bottom: 10px">
+				<select
+					id="mistakesAllowed"
+					class="puzzle-input"
+					style="
+						width: 30%;
+						padding: 10px;
+						margin-bottom: 10px;
+						margin-right: 20px;
+						border: 0.5px solid #6a0572;
+						border-radius: 8px;
+					"
+				>
+					<option value="any">
+						Number of Mistakes Allowed (default: any)
+					</option>
+					<option value="0">0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+				</select>
+				<input type="checkbox" id="allowHints" checked /> Show "One
+				away..."
+			</div>
+		</div>
+
+		<div class="category-inputs">
 			<div class="category-row">
 				<input
 					type="text"
@@ -47,7 +104,7 @@ endblock %} {% block content %}
 			onclick="submitGame()"
 			style="margin-top: 30px"
 		>
-			Submit
+			Create
 		</button>
 		<button class="button back" onclick="goBack()">Back</button>
 		<p id="gameCodeDisplay" class="game-code"></p>
@@ -208,6 +265,15 @@ endblock %} {% block content %}
 		let words = [];
 		let categories = {};
 
+		let puzzleName = document.getElementById("puzzleName").value.trim();
+		let puzzleDescription = document
+			.getElementById("puzzleDescription")
+			.value.trim();
+		let mistakesAllowed = document
+			.getElementById("mistakesAllowed")
+			.value.trim();
+		let allowHints = document.getElementById("allowHints").checked;
+
 		for (let input of inputs) {
 			let word = input.value.trim();
 			let color = input.style.backgroundColor;
@@ -255,11 +321,30 @@ endblock %} {% block content %}
 
 		const gameCode = Math.random().toString(36).substr(2, 6).toUpperCase();
 
+		// If puzzle name is empty, use game code as the puzzle name
+		if (puzzleName === "") {
+			puzzleName = gameCode;
+		}
+
+		// Process mistakesAllowed: if empty, default to "any", otherwise convert to an integer
+		if (mistakesAllowed === "") {
+			mistakesAllowed = "any";
+		} else {
+			mistakesAllowed = parseInt(mistakesAllowed);
+			if (isNaN(mistakesAllowed)) {
+				mistakesAllowed = "any";
+			}
+		}
+
 		fetch("/connections/save-puzzle", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
 				game_code: gameCode,
+				puzzle_name: puzzleName,
+				puzzle_description: puzzleDescription,
+				mistakes_allowed: mistakesAllowed,
+				allow_hints: allowHints,
 				puzzle: puzzleData,
 				categories: categories,
 			}),
