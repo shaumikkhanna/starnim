@@ -56,14 +56,17 @@ endblock %} {% block content %}
 						border-radius: 8px;
 					"
 				>
-					<option value="any">
-						Number of Mistakes Allowed (default: any)
+					<option value="unlimited">
+						Number of Mistakes Allowed (default: Unlimited)
 					</option>
-					<option value="0">0</option>
 					<option value="1">1</option>
 					<option value="2">2</option>
 					<option value="3">3</option>
 					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
 				</select>
 				<input type="checkbox" id="allowHints" checked /> Show "One
 				away..."
@@ -326,13 +329,13 @@ endblock %} {% block content %}
 			puzzleName = gameCode;
 		}
 
-		// Process mistakesAllowed: if empty, default to "any", otherwise convert to an integer
+		// Process mistakesAllowed: if empty, default to "unlimited", otherwise convert to an integer
 		if (mistakesAllowed === "") {
-			mistakesAllowed = "any";
+			mistakesAllowed = "unlimited";
 		} else {
 			mistakesAllowed = parseInt(mistakesAllowed);
 			if (isNaN(mistakesAllowed)) {
-				mistakesAllowed = "any";
+				mistakesAllowed = "unlimited";
 			}
 		}
 
