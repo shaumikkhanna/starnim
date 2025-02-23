@@ -25,6 +25,8 @@ endblock %} {% block content %}
 		{% endfor %}
 	</div>
 
+	<div id="livesBar" class="lives-bar"></div>
+
 	<!-- Buttons for actions -->
 	<div class="button-container">
 		<button class="action-button" onclick="submitSelection()">
@@ -36,14 +38,37 @@ endblock %} {% block content %}
 		<button class="action-button" onclick="shuffleGrid()">Shuffle</button>
 	</div>
 
-	<!-- Go Back button under the action buttons -->
 	<button class="action-button" onclick="goBack()">Go Back</button>
+
+	<audio
+		id="winChime"
+		src="{{ url_for('connections.static', filename='chimes/pacman_beginning.wav') }}"
+		preload="auto"
+	></audio>
+	<audio
+		id="loseSound"
+		src="{{ url_for('connections.static', filename='chimes/pacman_death.wav') }}"
+		preload="auto"
+	></audio>
 </div>
+
+<script id="categoryMappingData" type="application/json">
+	{{ puzzle.categories | tojson | safe }}
+</script>
+<script id="puzzleData" type="application/json">
+	{{ puzzle.puzzle | tojson | safe }}
+</script>
 
 <style>
 	.container {
 		text-align: center;
 		padding: 20px;
+	}
+	/* Lives bar styling */
+	.lives-bar {
+		font-size: 2rem;
+		color: #e74c3c; /* red color for hearts */
+		margin-bottom: 20px;
 	}
 	/* Grid container for 16 squares */
 	.grid-container {
@@ -121,7 +146,7 @@ endblock %} {% block content %}
 		transform: translateY(0);
 		opacity: 1;
 	}
-	/* Faster shake animation */
+	/* Shake animation */
 	@keyframes shake {
 		0% {
 			transform: translate(0, 0);
@@ -142,6 +167,21 @@ endblock %} {% block content %}
 	.shake {
 		animation: shake 0.2s;
 	}
+	/* Win animation (a simple pulse effect) */
+	@keyframes winPulse {
+		0% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.1);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+	.win-animation {
+		animation: winPulse 1s ease-in-out;
+	}
 	/* Category box colors (if needed elsewhere) */
 	.category-box.\30 {
 		background-color: rgb(249, 223, 109);
@@ -158,15 +198,32 @@ endblock %} {% block content %}
 	}
 </style>
 
-<script id="categoryMappingData" type="application/json">
-	{{ puzzle.categories | tojson | safe }}
-</script>
-
 <script>
 	// Parse category mapping from Jinja (using JSON.parse to avoid syntax issues)
 	const categoryMapping = JSON.parse(
 		document.getElementById("categoryMappingData").textContent
 	);
+	const puzzleData = JSON.parse(
+		document.getElementById("puzzleData").textContent
+	);
+
+	// Set up lives. If mistakes_allowed is "1000", lives is Infinity.
+	const allowedLives = JSON.parse(
+		"{{ puzzle.mistakes_allowed | tojson | safe }}"
+	);
+	let lives = allowedLives === 1000 ? Infinity : allowedLives;
+
+	const livesBar = document.getElementById("livesBar");
+	function updateLivesBar() {
+		if (lives !== Infinity) {
+			// Using the Unicode heart (♥, U+2665) for each life.
+			livesBar.innerHTML = "&#9829;".repeat(lives);
+		} else {
+			livesBar.innerHTML = ""; // Hide if 1000.
+		}
+	}
+	updateLivesBar();
+
 	// Define category colors that match your CSS
 	const categoryColors = {
 		0: { bg: "rgb(249, 223, 109)", text: "black" },
@@ -174,18 +231,20 @@ endblock %} {% block content %}
 		2: { bg: "rgb(176, 196, 239)", text: "black" },
 		3: { bg: "rgb(187, 129, 197)", text: "black" },
 	};
+
 	// Allow hints flag from puzzle.allow_hints
 	const allowHints = JSON.parse("{{ puzzle.allow_hints | tojson | safe }}");
 
 	const gridContainer = document.getElementById("gridContainer");
 	const correctContainer = document.getElementById("correctContainer");
 	let selectedSquares = [];
+	let gameOver = false;
 
 	// Attach click event listeners to grid squares
 	const squares = document.querySelectorAll(".grid-square");
 	squares.forEach((square) => {
 		square.addEventListener("click", () => {
-			toggleSelection(square);
+			if (!gameOver) toggleSelection(square);
 		});
 	});
 
@@ -204,6 +263,7 @@ endblock %} {% block content %}
 	}
 
 	function submitSelection() {
+		if (gameOver) return;
 		if (selectedSquares.length !== 4) {
 			alert("Please select exactly 4 squares.");
 			return;
@@ -235,8 +295,23 @@ endblock %} {% block content %}
 			// Remove solved squares from grid.
 			selectedSquares.forEach((square) => square.remove());
 			selectedSquares = [];
+			// Check win condition: if there are 4 solved rectangles, the user wins.
+			if (correctContainer.childElementCount === 4) {
+				winGame();
+			}
 		} else {
 			// Wrong guess.
+			if (lives !== Infinity) {
+				lives--;
+				updateLivesBar();
+				if (lives <= 0) {
+					gameOver = true;
+					document.getElementById("loseSound").volume = 1.0; // Set volume as desired.
+					document.getElementById("loseSound").play();
+					showAnswer();
+					return;
+				}
+			}
 			// Check if the selection is "one away" from being correct.
 			const counts = {};
 			selectedSquares.forEach((sq) => {
@@ -288,6 +363,52 @@ endblock %} {% block content %}
 
 	function goBack() {
 		window.history.back();
+	}
+
+	// When the user wins (i.e. all 4 categories are solved before lives run out), play a chime and animate.
+	function winGame() {
+		if (gameOver) return;
+		gameOver = true;
+		const winChime = document.getElementById("winChime");
+		winChime.volume = 1.0;
+		winChime.play();
+		// Add a win animation to the container.
+		document.querySelector(".container").classList.add("win-animation");
+		setTimeout(() => {
+			alert("Congratulations, you win!");
+		}, 1000);
+	}
+
+	// When game is over, show the answer.
+	function showAnswer() {
+		// Clear the grid.
+		gridContainer.innerHTML = "";
+		// Group the puzzle data by category.
+		const groups = {};
+		puzzleData.forEach((item) => {
+			if (!groups[item.category]) groups[item.category] = [];
+			groups[item.category].push(item.word);
+		});
+		// Clear any previous solved rectangles.
+		correctContainer.innerHTML = "";
+		// For each category group, display the solved rectangle.
+		for (const cat in groups) {
+			const categoryName = categoryMapping[cat] || "Category " + cat;
+			let solvedDiv = document.createElement("div");
+			solvedDiv.classList.add("solved-rectangle");
+			solvedDiv.innerHTML = `<h2>${categoryName}</h2><p>${groups[
+				cat
+			].join(", ")}</p>`;
+			if (categoryColors[cat]) {
+				solvedDiv.style.backgroundColor = categoryColors[cat].bg;
+				solvedDiv.style.color = categoryColors[cat].text;
+			}
+			correctContainer.appendChild(solvedDiv);
+			setTimeout(() => {
+				solvedDiv.classList.add("slide-in");
+			}, 50);
+		}
+		alert("Nice try!");
 	}
 </script>
 {% endblock %}

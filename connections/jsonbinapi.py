@@ -25,4 +25,5 @@ def put_puzzle_data(data):
     }
 
     req = requests.put(url, json=data, headers=headers)
-    print(req.text)
+    if req.status_code != 200:
+        print('Request not ok')

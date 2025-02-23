@@ -7,9 +7,12 @@ endblock %} {% block content %}
 	</h1>
 
 	<p class="instruction" style="margin-bottom: 50px">
-		Think of 4 categories with 4 words each. Enter the category names and
-		then use the grid below to enter the words. <br />
-		Each color represents a different category.
+		Enter the category names and then use the grid below to enter the words.
+		<br />
+		Each color represents a different category. Click on the circle to cycle
+		colors. <br />
+		The order of the grid here is how it will show in the final puzzle. Make
+		sure to SAVE the GAME CODE before going back.
 	</p>
 
 	<div id="gridContainer" class="card" style="padding-top: 60px">
@@ -56,15 +59,15 @@ endblock %} {% block content %}
 						border-radius: 8px;
 					"
 				>
-					<option value="unlimited">
+					<option value="1000">
 						Number of Mistakes Allowed (default: Unlimited)
 					</option>
 					<option value="1">1</option>
-					<option value="2">2</option>
+					<option value="2">2 (hard)</option>
 					<option value="3">3</option>
-					<option value="4">4</option>
+					<option value="4">4 (standard)</option>
 					<option value="5">5</option>
-					<option value="6">6</option>
+					<option value="6">6 (easy)</option>
 					<option value="7">7</option>
 					<option value="8">8</option>
 				</select>
@@ -329,13 +332,13 @@ endblock %} {% block content %}
 			puzzleName = gameCode;
 		}
 
-		// Process mistakesAllowed: if empty, default to "unlimited", otherwise convert to an integer
+		// Process mistakesAllowed: if empty, default to 1000, otherwise convert to an integer
 		if (mistakesAllowed === "") {
-			mistakesAllowed = "unlimited";
+			mistakesAllowed = 1000;
 		} else {
 			mistakesAllowed = parseInt(mistakesAllowed);
 			if (isNaN(mistakesAllowed)) {
-				mistakesAllowed = "unlimited";
+				mistakesAllowed = 1000;
 			}
 		}
 
@@ -354,12 +357,22 @@ endblock %} {% block content %}
 		})
 			.then((response) => response.json())
 			.then((data) => {
+				const gameUrl = `${window.location.origin}/connections/play/${gameCode}`;
 				document.getElementById(
 					"gameCodeDisplay"
-				).innerText = `Game Code: ${gameCode}`;
+				).innerHTML = `Game Code: ${gameCode}<br><br>Game URL: <a href="${gameUrl}" target="_blank">${gameUrl}</a>`;
 			})
 			.catch((error) => console.error("Error:", error));
 	}
+
+	document.querySelectorAll("input[type='text'], textarea").forEach((el) => {
+		el.addEventListener("input", function () {
+			if (this.value.length > 0) {
+				this.value =
+					this.value.charAt(0).toUpperCase() + this.value.slice(1);
+			}
+		});
+	});
 
 	function goBack() {
 		window.history.back();
