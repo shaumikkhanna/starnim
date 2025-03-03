@@ -15,8 +15,8 @@ body {
 	color: #6a0572;
 	margin-bottom: 80px;
 }
-input[type="text"],
-textarea {
+input[type="text"]::first-letter,
+textarea::first-letter {
 	text-transform: capitalize;
 }
 .card {
